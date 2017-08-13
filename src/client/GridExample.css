@@ -1,0 +1,82 @@
+body {
+  margin: 40px;
+  display: grid;
+}
+#boardContainer{
+  height: 100%;
+  background: linear-gradient(45deg, #8694e6, #f9fdff);
+}
+
+.board.nextBoard {
+   background: linear-gradient(-45deg, #fd8a1f, #f74600);
+}
+
+.board {
+  height: 95%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  background-color: transparent;
+  border-radius: 6px;
+}
+
+.board.x{
+  background: linear-gradient(-45deg, rgba(244, 255, 0, 0.6), rgba(44, 171, 51, 0.6));
+  //background: linear-gradient(-45deg, rgba(244, 255, 0, 0.7), rgba(53, 224, 63, 0.7));
+}
+
+.board.o{
+  background: linear-gradient(-45deg, rgba(161, 190, 220, 0.6), rgba(0, 0, 0, 0.6));
+}
+
+.board.active0{
+  background-color: #63058e;
+}
+
+.board.active1{
+  background-color: #b237ea;
+  border-radius: 6px;
+}
+
+.blvl1{
+  padding: 12px;
+}
+
+.blvl2{
+  padding:7px;
+}
+
+.blvl3{
+  padding: 3px;
+}
+
+.blvl4{
+  padding: 1px;
+}
+
+.squareBoarder {
+  display: inline-grid;
+  margin: 3px;
+  border-radius: 3px;
+  background-color: transparent;
+  box-shadow: 3px 3px;
+}
+
+.square{
+  height: 100%;
+  background: linear-gradient(-45deg, #e03716, #c3032e);
+  color: transparent;
+  border-radius: 3px;
+  padding: 1px;
+  font-size: 40%;
+}
+
+.square.X{
+  background: linear-gradient(-45deg, #cc9c04, #f5cece);
+  color: rgb(251, 251, 251);
+}
+.square.O{
+  background: linear-gradient(-45deg, #a1bedc, #000);
+  color: #56af94;
+
+}
