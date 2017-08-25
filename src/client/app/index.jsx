@@ -76,13 +76,13 @@ class App extends React.Component {
 /*-------*/
 $(document).ready(function(){
   ReactDOM.render(
-    <WrapperForDisplayBoard game = {new Game({numberOfLevels: 3})}/>,
+    <WrapperForDisplayBoard game = {new Game({numberOfLevels: 2})}/>,
     document.getElementById('app')
   );
 
 
-  var g = new Game({numberOfLevels: 3});
-  $(".square").click(function(){
+  var g = new Game({numberOfLevels: 2}); //** takes
+  $(".square").click(function(event){
 
     if (event.target.id){
       g.playMove(event.target.id);
@@ -95,12 +95,12 @@ $(document).ready(function(){
 
   var input
   var futureBoard;
-  $(".square").hover(function(){
+  $(".square").hover(function(event){
     input = event.target.id;
     if (isChildBoardOfState(g.state, input)){
       futureBoard = g.nextState(g.state, wrappedModulus(input, 9));
       while(g.subBoards[g.state].isFull){
-        futureBoard = parentState(futureBoard);
+        futureBoard = parentState(futureBoard); // use popUntilValid
       }
       $("#" + futureBoard).addClass('nextBoard');
     }
