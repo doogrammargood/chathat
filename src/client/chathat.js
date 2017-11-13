@@ -209,6 +209,7 @@ function Game(obj){
 	this.subBoards = [];
 	this.hasMoved = false; //This will change become true after the first move has been made. For display purposes.
 	this.winner = null;
+	this.moveHistory = [];
 	//The total number of boards is B=(9^n-1)/8. The other boards will be named '0' + [0..B]
 	var numberOfBoards = (9**this.numberOfLevels-1)/8;
 	var numberOfNonTerminatingBoards = (9**(this.numberOfLevels-1)-1)/8;
@@ -319,18 +320,93 @@ function Game(obj){
 		if (this.hasMoved === false){
 			this.hasMoved = true;
 		}
+		var boardsWon = []; // an array of the winners of the parent boads.
+		var newBoardsWon = []; // same as boardsWon, but after the move has been made.
+		var currentBoard = input;
+		var previousState = this.state;
+		while (currentBoard > 0) {
+			currentBoard = parentState(currentBoard);
+			boardsWon.push([currentBoard, this.findBoard(currentBoard).winner]);
+		}
 		//any preprocessing can be performed here
-			if (this.winner === null) {this.makeMove(input);}
+		if (this.winner === null) {this.makeMove(input);}
+
+		//Update move history:
+		currentBoard = input;
+		while (currentBoard > 0) {
+			currentBoard = parentState(currentBoard);
+			newBoardsWon.push([currentBoard, this.findBoard(currentBoard).winner]);
+		}
+
+		boardsWon = boardsWon.map(function(e, i){
+			return[e[0], e[1], newBoardsWon[i][1]];
+		}); //merges the lists BoardsWon and newBoardsWon. Overwrites boardsWon.
+
+		boardsWon = boardsWon.map(function(triple){
+			if (triple[1] === null && triple[2] != null){
+				return 'w'; //this move won the board.
+			} else if(triple[1] != null && triple[2] != triple[1]){
+				return 's'; //this move stole the board.
+			} else if (triple[1] === null && triple[2] != null){
+				return 'n'; //this move made the board neutral.
+			}
+		});
+		// returns a list of the boards which have been won.
+
+		boardsWon = boardsWon.filter(function(element){
+				return element !== undefined;
+		});
+		boardsWon.unshift(previousState);
+		boardsWon.unshift(input);
+		this.moveHistory.push(boardsWon);
+		//moveHistory is in the format [move, w, s, n]:
+		//w- this board was null, but was captured.
+		//s- the board was stolen from the other player.
+		//n- the board was owned by the other player, is now neutral.
 	}
 
-	/*this.undoMove = function(previousMove){
-		//We assume previousMove is actually the last move that was made.
-		//Exactly what this move was will be contained in a server-side
-		//object which is an array of the move history.
-		this.checkReasonableUndo = function(previousMove){
-			if this.boards...
+	this.undoMove = function(){
+		//Uses the moveHistory to undo the last move.
+		var lastMove = this.moveHistory.pop();
+		var parentBoard = parentState(lastMove[0]);
+		var lastBoard = this.findBoard(parentBoard);
+		var squareToErase = lastMove[0] - 9*parentBoard;
+		squareToErase -= 1;
+		var eraseY = squareToErase % 3;
+		var eraseX = Math.floor(squareToErase/3);
+		lastBoard.squares[eraseX][eraseY].token = null; //removes the token.
+		lastBoard.openSquares += 1;
+		lastBoard.isFull = false;
+
+		if (this.currentPlayer === 'X'){
+			this.currentPlayer = 'O';
+		} else {
+			this.currentPlayer = 'X';
 		}
-	}*/
+		lastMove.shift(); //gets rid of the move
+		this.state = lastMove.shift(); //gets rid of the previousState.
+		while (lastMove.length > 0){
+			change = lastMove.shift(); //wsn, from moveHistory.
+			if (change==='w'){
+				this.findBoard(parentBoard).winner = null;
+			}else if(change === 's'){
+				this.findBoard(parentBoard).winner = this.currentPlayer;
+			}else if(change === 'n' && this.currentPlayer==='X'){
+				this.findBoard(parentBoard).winner = 'O';
+			} else if(change === 'n' && this.currentPlayer==='O'){
+				this.findBoard(parentBoard).winner = 'X';
+			}
+			parentBoard = parentState(parentBoard);
+		}
+	}
+}
+
+function GameWrapper(obj){
+	//Includes a game, a history of the moves, and an undo function.
+	g = new Game(obj);
+	h = [];
+
+
 }
 
 function getBoardLevel(n){

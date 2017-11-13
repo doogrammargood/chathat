@@ -111,5 +111,15 @@ $(document).ready(function(){
     }
   }
 
-);
+  );
+  $(window).keypress(function(event){
+    console.log('undo pending');
+    g.undoMove();
+    ReactDOM.render(
+      <WrapperForDisplayBoard game = {g}/>,
+      document.getElementById('app')
+    );
+  });
+
+
 });
