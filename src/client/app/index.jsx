@@ -23,8 +23,8 @@ function DisplayBoard(props){
   var level = getBoardLevel(props.boardNumber);
   var game = props.game;
   var decorationObject = props.decorationObject;
-  var boardNumber = props.boardNumber
-    var boardClassName = "board blvl" + level + " " + game.subBoards[boardNumber].winner
+  var boardNumber = props.boardNumber;
+  var boardClassName = "board blvl" + level + " " + game.subBoards[boardNumber].winner;
   function addDecorations(props){
     if (props.decorationObject === null){return(null);}
     for(i = 0; i < props.game.numberOfLevels - 1; i++){

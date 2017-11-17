@@ -7,9 +7,9 @@ function Square(obj) {
 	}
 	this.token = null;
     this.nextBoard = obj.nextBoard; //a character 1-9 which is used to determine the next board
-
+		this.isTerminal = obj.isTerminal;
 		this.memberOf = obj.memberOf; //the board which this square is in.
-		this.identifier = this.memberOf*9 + this.nextBoard
+		this.identifier = this.memberOf*9 + this.nextBoard;
     isValidSquare = function(mark){
     	if(mark === 'X' || mark === 'O'){
     		return(true);
@@ -19,7 +19,9 @@ function Square(obj) {
 
     this.markSquare = function(mark){
 		if (isValidSquare(mark)){
-			if (this.token && this.memberOf.isTerminal){
+			console.log(this.token);
+			console.log(this.memberOf);
+			if (this.token && this.isTerminal){
 				console.log('Space is occupied');
 				return 'collision';
 			}
@@ -42,7 +44,7 @@ function Board(obj){
 	this.isTerminal = obj.isTerminal;
 	for (i = 0; i < 3; i++){
 		for (j = 0; j < 3; j++){
-			row.push(new Square({nextBoard: 3*i+j+1, memberOf: this.name}));
+			row.push(new Square({nextBoard: 3*i+j+1, memberOf: this.name, isTerminal: this.isTerminal}));
 		}
 		this.squares.push(row);
 		row = [];
@@ -214,7 +216,7 @@ function Game(obj){
 	var numberOfBoards = (9**this.numberOfLevels-1)/8;
 	var numberOfNonTerminatingBoards = (9**(this.numberOfLevels-1)-1)/8;
 	for (i = 0; i < numberOfBoards; i++){
-		this.subBoards.push(new Board({name: i, isTerminal: (i > numberOfNonTerminatingBoards)}));
+		this.subBoards.push(new Board({name: i, isTerminal: (i > numberOfNonTerminatingBoards - 1)}));
 	}
 	var modulus = 9**(this.numberOfLevels - 1);
 	var smallerModulus = 9**(this.numberOfLevels - 2); //This is an artifact to avoid landing on 009999...
@@ -329,7 +331,7 @@ function Game(obj){
 			boardsWon.push([currentBoard, this.findBoard(currentBoard).winner]);
 		}
 		//any preprocessing can be performed here
-		if (this.winner === null) {this.makeMove(input);}
+		if (this.makeMove(input) === 'collision') {return 'collision';}
 
 		//Update move history:
 		currentBoard = input;
