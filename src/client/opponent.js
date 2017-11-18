@@ -10,23 +10,21 @@ function evaluateGame(game){
     //  console.log('attempting to evaluate the value of something that is not a board.'); //idk why this might happen.
     //}
 
-    function evaluateLine(s1, s2, s3, free){
+    function evaluateLine(s1, s2, s3, won){
       //s1, s2, s3 are squares.
       //free tells you whether the board has been won or not.
 
       function evaluateSquare(s){
-        console.log(board.isTerminal);
-        var nextState = game.nextState(s.memberOf, s.nextBoard)
-        if (nextState){
-          console.log('bottom');
+        var nextState = game.nextState(s.memberOf, s.nextBoard);
+        if (s.isTerminal){
           if (s.token === 'X'){         //The terminal squares do not unambigously lead
-            return 1;                               //to any particular board. For boards of 3 levels or more,
+            return 1;                   //to any particular board. For boards of 3 levels or more,
           } else if (s.token === 'O'){  //it will depend on the state of the game.
             return -1;
-          }
+          } else {return 0;}
         } else {
           //console.log(game.nextState(s.memberOf, s.nextBoard));
-          return evaluateBoard(game.findBoard(game.nextState(s.memberOf, s.nextBoard))); //we find the board associated with the square.
+          return evaluateBoard(game.findBoard(nextState));
         }
       }
 
@@ -34,25 +32,24 @@ function evaluateGame(game){
       var y = evaluateSquare(s2);
       var z = evaluateSquare(s3);
       var sum = x+y+z;
-
-      if (free){
-        return (x*y + y*z + x*z + 1) * (1.25*sum^2 - 0.85*sum + 0.15);
+      if (won){
+        return (x*y + y*z + x*z + 1) * (0.25*sum**3 - 0.75*sum);
       } else{
-        return (x*y + y*z + x*z + 1) * (0.25*sum^2 - 0.95*sum - 0.05);
+        return (x*y + y*z + x*z + 1) * ((1/12)*sum**3 - (11/12)*sum);
       }
     }
 
     var total = 0;
     var i = 0;
-    var free = board.winner;
+    var won = board.winner;
     for (i = 0; i < 3; i++){
-      total += evaluateLine(board.squares[0][i], board.squares[1][i], board.squares[2][i], free);
+      total += evaluateLine(board.squares[0][i], board.squares[1][i], board.squares[2][i], won);
     }
     for (i = 0; i < 3; i++){
-      total += evaluateLine(board.squares[i][0], board.squares[i][1], board.squares[i][2], free);
+      total += evaluateLine(board.squares[i][0], board.squares[i][1], board.squares[i][2], won);
     }
-    total += evaluateLine(board.squares[0][0], board.squares[1][1], board.squares[2][2], free); //diagonal
-    total += evaluateLine(board.squares[2][0], board.squares[1][1], board.squares[0][2], free); //antidiagonal
+    total += evaluateLine(board.squares[0][0], board.squares[1][1], board.squares[2][2], won); //diagonal
+    total += evaluateLine(board.squares[2][0], board.squares[1][1], board.squares[0][2], won); //antidiagonal
     return total;
   }
 
@@ -71,11 +68,12 @@ function evaluateGame(game){
 // Is it true that whenever the heuristic function is positive, either the board is empty or X has won it?
 
 //Heuristic on each line:
-//f(x,y,z) = (xy + yz + xz + 1) * (1.25 s^2 - 0.85 s + 0.15) (while unwon)
-//         = (xy + yz + xz + 1) * (0.25 s^2 - 0.95 s -0.05) (After victory)
+//f(x,y,z) = (xy + yz + xz + 1) * (0.25*s^3 + 0.75*s) (while unwon)
+//         = (xy + yz + xz + 1) * (1/12 s^2 + 10/12) (After victory)
 
 // The first factor is meant to discount lines that are likely to be blocked.
-// The second factor comes from fitting a quadratic to the points in the simple case.
+// The second factor comes from fitting curve of the form ax^3+bx to the points 1,1 and 3,9 or 3,5.
+// This form was chosen because it is an odd function.
 // Actually, note that this gives no advantage to having only one square in a line.
 
 // The heuristic function's plans:
