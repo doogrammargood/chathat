@@ -87,6 +87,8 @@ $(document).ready(function(){
     if (event.target.id){
       g.playMove(event.target.id);
     }
+    console.log('game value is now ');
+    console.log(evaluateGame(g));
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
@@ -97,7 +99,7 @@ $(document).ready(function(){
   var futureBoard;
   $(".square").hover(function(event){
     input = event.target.id;
-    if (isChildBoardOfState(g.state, input)){
+    if (g.validMoves().includes(parseInt(input))){
       futureBoard = g.nextState(g.state, wrappedModulus(input, 9));
       while(g.subBoards[g.state].isFull){
         futureBoard = parentState(futureBoard); // use popUntilValid

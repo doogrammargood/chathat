@@ -175,11 +175,11 @@ function Board(obj){
 function isChildBoardOfState(state, identifier){
 	var localIdentifier = identifier;
 	var localState = state;
-	while(state < localIdentifier){
-		localIdentifier = parentState(localIdentifier);
+	while(state <= localIdentifier){
 		if(state === localIdentifier){
 			return(true);
 		}
+		localIdentifier = parentState(localIdentifier);
 	}
 	return(false);
 }
@@ -212,6 +212,7 @@ function Game(obj){
 	this.hasMoved = false; //This will change become true after the first move has been made. For display purposes.
 	this.winner = null;
 	this.moveHistory = [];
+	this.allowedMoves;
 	//The total number of boards is B=(9^n-1)/8. The other boards will be named '0' + [0..B]
 	var numberOfBoards = (9**this.numberOfLevels-1)/8;
 	var numberOfNonTerminatingBoards = (9**(this.numberOfLevels-1)-1)/8;
@@ -331,7 +332,11 @@ function Game(obj){
 			boardsWon.push([currentBoard, this.findBoard(currentBoard).winner]);
 		}
 		//any preprocessing can be performed here
-		if (this.makeMove(input) === 'collision') {return 'collision';}
+
+		if (this.validMoves().includes(parseInt(input))){
+			if (this.makeMove(input) === 'collision') {return 'collision';}
+		}
+		this.allowedMoves = undefined;
 
 		//Update move history:
 		currentBoard = input;
@@ -367,9 +372,21 @@ function Game(obj){
 		//n- the board was owned by the other player, is now neutral.
 	}
 
-	this.undoMove = function(){
-		//Uses the moveHistory to undo the last move.
-		var lastMove = this.moveHistory.pop();
+	this.undoMove = function(obj){
+		//Uses the moveHistory, unless the last move is passed in explicitly.
+		//I am doing this so that eventually there can be two copies of the game,
+		//One for the client and one for the server. The client's game will not have a moveHistory,
+		//but can recieve it from the server.
+		//The bots will use a stripped-down version of makeMove that doesn't check for move validity or keep an undo history.
+		if (this.moveHistory.length === 0){
+			return 'Empty'; // can't undo if no move have been made.
+		}
+		var lastMove;
+		if (obj.lastMove){
+			lastMove = obj.lastMove;
+		} else{
+			lastMove = this.moveHistory.pop();
+		}
 		var parentBoard = parentState(lastMove[0]);
 		var lastBoard = this.findBoard(parentBoard);
 		var squareToErase = lastMove[0] - 9*parentBoard;
@@ -401,15 +418,28 @@ function Game(obj){
 			parentBoard = parentState(parentBoard);
 		}
 	}
+
+	this.validMoves = function(){ // returns a list of valid moves.
+		var state = this.state;
+		if (this.allowedMoves){
+			return this.allowedMoves;
+		} else{
+			this.allowedMoves = this.subBoards.filter(function(subBoard){
+				return isChildBoardOfState(state, subBoard.name) && subBoard.isTerminal;
+			}).map(function(subBoard){
+				return subBoard.squares.reduce((a, b) => a.concat(b), []); //flattens the array of squares
+			}).reduce((a, b) => a.concat(b), []
+			).filter(function(square){
+				//console.log(square);
+				return square.token === null;
+			}).map(function(square){
+				return square.identifier;
+			});
+			return this.allowedMoves;
+		}
+	}
 }
 
-function GameWrapper(obj){
-	//Includes a game, a history of the moves, and an undo function.
-	g = new Game(obj);
-	h = [];
-
-
-}
 
 function getBoardLevel(n){
   if (n === 0){
