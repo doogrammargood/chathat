@@ -19,8 +19,6 @@ function Square(obj) {
 
     this.markSquare = function(mark){
 		if (isValidSquare(mark)){
-			console.log(this.token);
-			console.log(this.memberOf);
 			if (this.token && this.isTerminal){
 				console.log('Space is occupied');
 				return 'collision';
@@ -290,10 +288,6 @@ function Game(obj){
 		}
 		this.popUntilValid = function(){
 			var newState = this.state;
-			console.log('new state is');
-			console.log(newState);
-			console.log('suboards');
-			console.log(this.subBoards[newState]);
 			while (this.subBoards[newState].isFull){
 				if (newState === 0){ return('draw'); }
 				newState = parentState(newState);
@@ -366,6 +360,7 @@ function Game(obj){
 		boardsWon.unshift(previousState);
 		boardsWon.unshift(input);
 		this.moveHistory.push(boardsWon);
+		return 'success'; //indicates successful move
 		//moveHistory is in the format [move, w, s, n]:
 		//w- this board was null, but was captured.
 		//s- the board was stolen from the other player.
@@ -382,7 +377,7 @@ function Game(obj){
 			return 'Empty'; // can't undo if no move have been made.
 		}
 		var lastMove;
-		if (obj.lastMove){
+		if (obj && obj.lastMove){
 			lastMove = obj.lastMove;
 		} else{
 			lastMove = this.moveHistory.pop();
