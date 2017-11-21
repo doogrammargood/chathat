@@ -8,9 +8,7 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
   function evaluateBoard(board){ // returns the value of a board, assuming control over the squares is known..
     if (previousValues && previousMove){
       if (! isChildBoardOfState(board.name, previousMove)){
-        console.log('MEMOIZED!');
-        counter++;
-        return previousValues[counter - 1];
+        return previousValues[board.name];
       }
     }
 
@@ -27,7 +25,6 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
             return -1;
           } else {return 0;}
         } else {
-          //console.log(game.nextState(s.memberOf, s.nextBoard));
           return evaluateBoard(game.findBoard(nextState));
         }
       }
@@ -54,17 +51,17 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
     }
     total += evaluateLine(board.squares[0][0], board.squares[1][1], board.squares[2][2], won); //diagonal
     total += evaluateLine(board.squares[2][0], board.squares[1][1], board.squares[0][2], won); //antidiagonal
-    listOfBoardValues[counter] = total;
-    counter++;
+    listOfBoardValues[board.name] = total;
     return total;
   }
-  var listOfBoardValues = [];
+  var listOfBoardValues = game.subBoards.map(function(element){
+    return undefined;
+  });
   if (previousValues){
     listOfBoardValues = previousValues;
   }
                         //This is for memoization. The values will be stored in the order in which they're computed.
                         //It's hard to say how exactly this new order corresponds to the old order.
-  var counter = 0; //The counter will keep track of the boards that have been computed so we can use listOfBoardValues.
   evaluateBoard(game.subBoards[0]);
   return listOfBoardValues;
 }

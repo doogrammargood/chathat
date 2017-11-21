@@ -114,6 +114,17 @@ $(document).ready(function(){
   }
 
   );
+  $("#botButton").click(function(event){
+    var bot = new Bot({game: g});
+    var recommended = bot.recommendMove();
+    g.playMove(recommended);
+    console.log('made the bots move');
+    console.log(recommended);
+    ReactDOM.render(
+      <WrapperForDisplayBoard game = {g}/>,
+      document.getElementById('app')
+    );
+  });
   $(window).keypress(function(event){
     console.log('undo pending');
     g.undoMove();
