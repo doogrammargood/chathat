@@ -87,8 +87,6 @@ $(document).ready(function(){
     if (event.target.id){
       g.playMove(event.target.id);
     }
-    console.log('game value is now ');
-    console.log(evaluateGame(g));
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
@@ -118,8 +116,6 @@ $(document).ready(function(){
     var bot = new Bot({game: g});
     var recommended = bot.recommendMove();
     g.playMove(recommended);
-    console.log('made the bots move');
-    console.log(recommended);
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')

@@ -329,8 +329,9 @@ function Game(obj){
 
 		if (this.validMoves().includes(parseInt(input))){
 			if (this.makeMove(input) === 'collision') {return 'collision';}
-		}
+		} else {return 'invalidMove';}
 		this.allowedMoves = undefined;
+		this.validMoves();//recalculates the allowedMoves
 
 		//Update move history:
 		currentBoard = input;
@@ -376,6 +377,7 @@ function Game(obj){
 		if (this.moveHistory.length === 0){
 			return 'Empty'; // can't undo if no move have been made.
 		}
+		this.allowedMoves = undefined;
 		var lastMove;
 		if (obj && obj.lastMove){
 			lastMove = obj.lastMove;
