@@ -81,7 +81,7 @@ $(document).ready(function(){
   );
 
 
-  var g = new Game({numberOfLevels: 2}); //** takes
+  var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
   $(".square").click(function(event){
 
     if (event.target.id){

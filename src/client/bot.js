@@ -19,7 +19,7 @@ function Bot(obj){
       this.toPlay = obj.toPlay;
       this.moveToGetHere = obj.moveToGetHere;
       this.addChild = function(obj){ //expects: obj = {game:_, move:_,}
-        if (obj.game.playMove(obj.move) === 'success'){
+        if (obj.game.playMove(obj.move) !== 'collision'){
           var heuristic = evaluateGame(obj.game, this.data.heuristic, obj.move);
           this.children.push(new Node({data: {heuristic: heuristic, minimax: undefined},
                                        parent: this,
@@ -29,10 +29,10 @@ function Bot(obj){
                                        moveToGetHere: obj.move,
                                        toPlay: obj.game.currentPlayer}));
           this.unexploredMoves = this.unexploredMoves.filter(function(move){
-            return move != obj.move;
+            return move !== obj.move;
           });
           return this.children[this.children.length - 1]; //return the node that was just created.
-        } else {console.log('The bot made an illegal move!'); console.log(obj.move);}
+        } else {console.log('The bot made an illegal move!'); console.log(obj.move); console.log(obj.game);}
       }
 
       this.calculateMinimax = function(){ // examines the minimax values of the children and sets the current value accordingly.
@@ -100,7 +100,7 @@ function Bot(obj){
       this.currentGame = copyGame(this.rootGame);
       var maxDepth = this.depth;
       this.maxValue = function(node, a, b){//
-        if (node.depth -this.rootNode.depth >= maxDepth){ //If this node is terminal,
+        if (node.depth - this.rootNode.depth >= maxDepth){ //If this node is terminal,
           node.data.minimax = node.data.heuristic[0];
           this.currentGame.undoMove();
           return node.data.minimax;
@@ -108,6 +108,14 @@ function Bot(obj){
         node.data.minimax = -Infinity;
         var newMinimax;
         var nextNode;
+        if (this.currentGame.validMoves().length === 0){ // This will occur when the game ends.
+          if (this.currentGame.winner === 'X'){
+            node.data.minimax = Infinity;
+          } else if (this.currentGame.winner === 'O'){
+            node.data.minimax = -Infinity;
+          } else {node.data.minimax = 0;}
+        }
+
         while(node.unexploredMoves.length > 0){
           nextNode = node.addChild({game: this.currentGame, move: node.unexploredMoves[0]}); //This reduces node.unexploredMoves, so the loop terminates.
           newMinimax = this.minValue(nextNode, a, b);
@@ -128,6 +136,13 @@ function Bot(obj){
         node.data.minimax = Infinity;
         var newMinimax;
         var nextNode;
+        if (this.currentGame.validMoves().length === 0){ // This will occur when the game ends.
+          if (this.currentGame.winner === 'X'){
+            node.data.minimax = Infinity;
+          } else if (this.currentGame.winner === 'O'){
+            node.data.minimax = -Infinity;
+          } else {node.data.minimax = 0;}
+        }
         while(node.unexploredMoves.length > 0){
           nextNode = node.addChild({game: this.currentGame, move: node.unexploredMoves[0]});
           newMinimax = this.maxValue(nextNode, a, b);
@@ -205,7 +220,6 @@ function Bot(obj){
 
   var freshGame = copyGame(obj.game);
   this.gameTree = new GameTree({game: freshGame, depth: 4});
-  console.log(this.gameTree.rootNode);
   this.recommendMove = function(){ return this.gameTree.recommendMove();}
 }
 

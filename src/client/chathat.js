@@ -70,7 +70,6 @@ function Board(obj){
 		if (lastMove){ //If we're told the last move...
 			if (this.squares[lastMove.x][0].token === this.squares[lastMove.x][1].token
 				&& this.squares[lastMove.x][1].token === this.squares[lastMove.x][2].token){
-					console.log('winner set horizontally');
 					this.horizontalWins[lastMove.x] = this.squares[lastMove.x][0].token;
 					//this.winner = this.squares[lastMove.x][0].token;
 			} else {this.horizontalWins[lastMove.x] = null;}
@@ -78,27 +77,24 @@ function Board(obj){
 
 			if (this.squares[0][lastMove.y].token === this.squares[1][lastMove.y].token
 				&& this.squares[1][lastMove.y].token === this.squares[2][lastMove.y].token){
-					console.log('winner set vertically');
 					this.verticalWins[lastMove.y] = this.squares[0][lastMove.y].token;
-					//this.winner = this.squares[0][lastMove.y].token;
 			} else {this.verticalWins[lastMove.y] = null;}
 			//vertically
 
-			if (lastMove.x === lastMove.y
-				&& this.squares[0][0].token === this.squares[1][1].token
+			if (lastMove.x === lastMove.y){
+				if (this.squares[0][0].token === this.squares[1][1].token
 				&& this.squares[1][1].token === this.squares[2][2].token){
-					console.log('winner set diagonally');
 					this.diagonalWins[0] = this.squares[0][0].token;
-					//this.winner = this.squares[0][0].token;
-			} else {this.diagonalWins[0] = null;}
+				} else {this.diagonalWins[0] = null;}
+			}
 			//diagonally
 
-			if (lastMove.x + lastMove.y === 2
-                && this.squares[0][2].token === this.squares[2][0].token
-                && this.squares[2][0].token === this.squares[1][1].token){
-									console.log('winner set antidiagonally');
-                   this.diagonalWins[1] = this.squares[1][1].token;
-    	} else {this.diagonalWins[1] = null;}
+			if (lastMove.x + lastMove.y === 2){
+        if (this.squares[0][2].token === this.squares[2][0].token
+        && this.squares[2][0].token === this.squares[1][1].token){
+           this.diagonalWins[1] = this.squares[1][1].token;
+    		} else {this.diagonalWins[1] = null;}
+			}
 			//diagonally the other way
 			return null;
 
@@ -150,7 +146,7 @@ function Board(obj){
 				this.isFull = true;
 			}
 		}
-		board = this.squares[obj.x][obj.y].markSquare(obj.token);
+		var board = this.squares[obj.x][obj.y].markSquare(obj.token);
 		if(board === 'collision'){
 			return 'collision';
 		} else {
@@ -249,10 +245,9 @@ function Game(obj){
 			var parentBoard = this.findBoard(parentalState);
 			while (localBoard.winner){
 				if (localState === 0){
-					console.log("and the winner is " + localBoard.winner);
 					this.winner = localBoard.winner;
 					return(localBoard.winner);}
-				parentBoard.makeMove( {index: wrappedModulus( localState, 9), token: this.currentPlayer} );
+				parentBoard.makeMove( {index: wrappedModulus( localState, 9), token: localBoard.winner} );
 				localBoard = parentBoard;
 				localState = parentalState;
 				parentalState = parentState(localState);
@@ -305,7 +300,6 @@ function Game(obj){
 			return('collision');
 		}
 		if (winner = this.checkVictory(boardToPlayOn)){ //check for winners on the board that was moved on.
-			console.log('we have a winner: ' + winner);
 			return winner;
 		}
 		this.state = this.nextState(boardToPlayOn, position);
@@ -314,6 +308,9 @@ function Game(obj){
 	}
 
 	this.playMove = function(input){
+		if (input === '16' && this.playerX === 'Jonathan'){
+			console.log('wait here');
+		}
 		if (this.hasMoved === false){
 			this.hasMoved = true;
 		}
@@ -331,8 +328,8 @@ function Game(obj){
 		if (this.validMoves().includes(parseInt(input))){
 			moveValue = this.makeMove(input);
 			if (moveValue === 'collision') {return 'collision';}
-			else if (moveValue === 'X') {return moveValue;}
-			else if (moveValue === 'O') {return moveValue;}
+			else if (this.winner === 'X') { return moveValue;}
+			else if (this.winner === 'O') { return moveValue;}
 		} else {return 'invalidMove';}
 		this.allowedMoves = undefined;
 		this.validMoves();//recalculates the allowedMoves
