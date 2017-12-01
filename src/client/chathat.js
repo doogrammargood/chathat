@@ -320,6 +320,7 @@ function Game(obj){
 		var boardsWon = []; // an array of the winners of the parent boads.
 		var newBoardsWon = []; // same as boardsWon, but after the move has been made.
 		var currentBoard = input;
+		var moveValue; // recieves its value from makeMove.
 		var previousState = this.state;
 		while (currentBoard > 0) {
 			currentBoard = parentState(currentBoard);
@@ -328,7 +329,10 @@ function Game(obj){
 		//any preprocessing can be performed here
 
 		if (this.validMoves().includes(parseInt(input))){
-			if (this.makeMove(input) === 'collision') {return 'collision';}
+			moveValue = this.makeMove(input);
+			if (moveValue === 'collision') {return 'collision';}
+			else if (moveValue === 'X') {return moveValue;}
+			else if (moveValue === 'O') {return moveValue;}
 		} else {return 'invalidMove';}
 		this.allowedMoves = undefined;
 		this.validMoves();//recalculates the allowedMoves
@@ -418,6 +422,7 @@ function Game(obj){
 
 	this.validMoves = function(){ // returns a list of valid moves.
 		var state = this.state;
+		if (this.winner) {return []}
 		if (this.allowedMoves){
 			return this.allowedMoves;
 		} else{
