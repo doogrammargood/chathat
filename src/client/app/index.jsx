@@ -75,6 +75,9 @@ class App extends React.Component {
 
 /*-------*/
 $(document).ready(function(){
+  var botCreated = false; //Initially, there is no bot present.
+  var bot;
+  var botMove;
   ReactDOM.render(
     <WrapperForDisplayBoard game = {new Game({numberOfLevels: 2})}/>,
     document.getElementById('app')
@@ -83,14 +86,20 @@ $(document).ready(function(){
 
   var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
   $(".square").click(function(event){
-
     if (event.target.id){
       g.playMove(event.target.id);
+    if (botCreated){
+      console.log(bot); //Tell the bot your move.
+      botMove = bot.receiveMove(event.target.id);
+      console.log(botMove);
+        g.playMove(botMove);                 //play that move one the board.
+        bot.receiveMove(botMove);     //make the bot play its move.
     }
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
     );
+  }
   });
 
   var input
@@ -115,20 +124,27 @@ $(document).ready(function(){
   $("#botButton").click(function(event){
     var bot = new Bot({game: g});
     var recommended = bot.recommendMove();
+    console.log(bot.gameTree.rootNode.data.minimax);
+    console.log(bot.gameTree.rootNode.data.heuristic);
     g.playMove(recommended);
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
     );
   });
+  $("#generateOpponent").click(function(event){
+    if (botCreated) {return null;} //Do nothing, because there's already a bot.
+    botCreated = true;
+    bot = new Bot({game: g});
+
+  })
   $(window).keypress(function(event){
     console.log('undo pending');
     g.undoMove();
+    console.log(g);
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
     );
   });
-
-
 });

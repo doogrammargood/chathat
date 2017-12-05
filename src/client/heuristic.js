@@ -33,7 +33,7 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
       var y = evaluateSquare(s2); //They grow on the parent boards. I am not sure how to control this.
       var z = evaluateSquare(s3);
       var sum = x+y+z;
-      return ( (x*y + y*z + x*z + 1) * (sum**3 - 4.143*sum) / (4 * 14.571) );
+      return ( (x*y + y*z + x*z + 1) * (sum**3 + 0.75*sum) / (4 * 29.25 * 8) );
       console.log('Do not call evaluateSquare on a captured board, dummy!');
     } //end of evaluateLine
 
@@ -74,17 +74,10 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
 
 // Since the game is recursive, it makes sense to apply a recursive hueristic function:
 // If we define it on a board whose squares are given definite values, we can propogate this function up.
-// The function is the first proposal:
-//    For each of the 8 line to win, that line is worth
-//    0 points if empty or blocked
-//    1, -1 points if one square is occupied
-//    3, -3 points if two squares are occupied     Its necessary that this is more than 2, or we would be counting tokens.
-//    9, -9 the first time a line is occupied.        This must be more than 3+3
-//    5, -5 the second and third time a line is occupied. //Note that 5+5 > 9, and 5+3 < 9.
-// Is it true that whenever the heuristic function is positive, either the board is empty or X has won it?
+// Each board has a heuristic which is the sum of the values for each of the 8 lines (ways to  win).
 
 //Heuristic on each line:
-//f(x,y,z) = (xy + yz + xz + 1) * (s^3 - 4.143*s) / (4 * 14.571) (while unwon; s=x+y+z)
+//f(x,y,z) = (xy + yz + xz + 1) * (s^3 + 0.75*s) / (4 * 29.25) (while unwon; s=x+y+z)
 //         = 1 or -1 (After victory)
 
 // The first factor is meant to discount lines that are likely to be blocked.
@@ -94,11 +87,12 @@ function evaluateGame(game, previousValues, previousMove){ //previousValues are 
 //    We can reason about its values in the discrete case:
 //       g must satisfy g(2) > 2*g(1)
 //          Otherwise, two disconnected squares would be preferable to one that was aligned.
-//       g must satisfy g(3) > 5*g(2)
-//          Otherwise, having a 2x2 subsquare would be preferable to actually winning the board.
-//          Maybe having the 4 corners is preferable to a line, but I don't think that's a big deal.
-//    These considerations force -6 < a < -16/7. Taking the average gives a = -4.143 (approximately)
-// Finally, the factor at the end is for normalization.
+//          This always holds.
+//       g must satisfy g(3) > 3*g(2)
+//          Otherwise, having an L shape would be preferable to having a line.
+//    These considerations force 0 < a < 3/2. Taking the average gives a = 0.75
+// Finally, the factor at the end is for normalization to the interval [-1/8, 1/8].
+//    This interval was chosen because it should be better to own a board than very nearly own all 8 lines that comprise it.
 
 // The heuristic function's plans:
 

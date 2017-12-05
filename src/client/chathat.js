@@ -221,7 +221,7 @@ function Game(obj){
 		if (this.numberOfLevels === 1){ return(0);} //Quick and dirty fix.
 		var newState = wrappedModulus((state*9 + play), 9**(this.numberOfLevels-1));
 		if (state < numberOfNonTerminatingBoards/9){
-			//This clause is only called when drawing the boards.
+			//This clause is only called when drawing the boards. Or when the board starts to get full.
 		}else if (newState < numberOfNonTerminatingBoards){
 			newState += (9**(this.numberOfLevels-1));
 		}
@@ -328,8 +328,8 @@ function Game(obj){
 		if (this.validMoves().includes(parseInt(input))){
 			moveValue = this.makeMove(input);
 			if (moveValue === 'collision') {return 'collision';}
-			else if (this.winner === 'X') { return moveValue;}
-			else if (this.winner === 'O') { return moveValue;}
+			//else if (this.winner === 'X') { return moveValue;}
+			//else if (this.winner === 'O') { return moveValue;}
 		} else {return 'invalidMove';}
 		this.allowedMoves = undefined;
 		this.validMoves();//recalculates the allowedMoves
@@ -363,38 +363,31 @@ function Game(obj){
 		boardsWon.unshift(input);
 		this.moveHistory.push(boardsWon);
 		return 'success'; //indicates successful move
-		//moveHistory is in the format [move, w, s, n]:
+		//moveHistory is in the format [move, state, w, s, n]:
+		//state- the state of the board when the move was made.
 		//w- this board was null, but was captured.
 		//s- the board was stolen from the other player.
 		//n- the board was owned by the other player, is now neutral.
 	}
 
 	this.undoMove = function(obj){
-		//Uses the moveHistory, unless the last move is passed in explicitly.
-		//I am doing this so that eventually there can be two copies of the game,
-		//One for the client and one for the server. The client's game will not have a moveHistory,
-		//but can recieve it from the server.
-		//The bots will use a stripped-down version of makeMove that doesn't check for move validity or keep an undo history.
+		this.winner = null;
+		//Uses the moveHistory
 		if (this.moveHistory.length === 0){
 			return 'Empty'; // can't undo if no move have been made.
 		}
-		this.allowedMoves = undefined;
+		this.allowedMoves = undefined; //The valid moves will have changed after an undo.
 		var lastMove;
 		if (obj && obj.lastMove){
 			lastMove = obj.lastMove;
 		} else{
 			lastMove = this.moveHistory.pop();
 		}
-		var parentBoard = parentState(lastMove[0]);
-		var lastBoard = this.findBoard(parentBoard);
-		var squareToErase = lastMove[0] - 9*parentBoard;
+		var parentBoard = this.findBoard(parentState(lastMove[0]));
+		var squareToErase = lastMove[0] - 9*parentBoard.name;
 		squareToErase -= 1;
 		var eraseY = squareToErase % 3;
 		var eraseX = Math.floor(squareToErase/3);
-		lastBoard.squares[eraseX][eraseY].token = null; //removes the token.
-		lastBoard.openSquares += 1;
-		lastBoard.isFull = false;
-
 		if (this.currentPlayer === 'X'){
 			this.currentPlayer = 'O';
 		} else {
@@ -402,18 +395,28 @@ function Game(obj){
 		}
 		lastMove.shift(); //gets rid of the move
 		this.state = lastMove.shift(); //gets rid of the previousState.
-		while (lastMove.length > 0){
+		while (lastMove.length >= 0){
+
 			change = lastMove.shift(); //wsn, from moveHistory.
+			parentBoard.squares[eraseX][eraseY].token = null; //removes the token.
+			parentBoard.openSquares += 1;
+			parentBoard.isFull = false;
+			parentBoard.updateVictories({x: eraseX, y: eraseY}); //recalculates which lines have been won.
 			if (change==='w'){
-				this.findBoard(parentBoard).winner = null;
+				parentBoard.winner = null;
 			}else if(change === 's'){
-				this.findBoard(parentBoard).winner = this.currentPlayer;
+				parentBoard.winner = this.currentPlayer;
 			}else if(change === 'n' && this.currentPlayer==='X'){
-				this.findBoard(parentBoard).winner = 'O';
+				parentBoard.winner = 'O';
 			} else if(change === 'n' && this.currentPlayer==='O'){
-				this.findBoard(parentBoard).winner = 'X';
+				parentBoard.winner = 'X';
 			}
-			parentBoard = parentState(parentBoard);
+			lastBoard = parentBoard;
+			parentBoard = this.findBoard(parentState(lastBoard.name));
+			squareToErase = lastBoard.name - 9*parentBoard.name - 1;
+			eraseY = squareToErase % 3;
+			eraseX = Math.floor(squareToErase/3);
+			if (lastMove.length ===0){return 'undone';}
 		}
 	}
 
