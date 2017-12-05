@@ -88,10 +88,8 @@ $(document).ready(function(){
   $(".square").click(function(event){
     if (event.target.id){
       g.playMove(event.target.id);
-    if (botCreated){
-      console.log(bot); //Tell the bot your move.
+    if (botCreated && ! g.winner){
       botMove = bot.receiveMove(event.target.id);
-      console.log(botMove);
         g.playMove(botMove);                 //play that move one the board.
         bot.receiveMove(botMove);     //make the bot play its move.
     }
