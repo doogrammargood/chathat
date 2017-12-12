@@ -85,7 +85,7 @@ $(document).ready(function(){
 
 
   var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
-  $(".square").click(function(event){
+  $("#app").on('click', ".square",function(event){
     if (event.target.id){
       g.playMove(event.target.id);
     if (botCreated && ! g.winner){
@@ -102,7 +102,8 @@ $(document).ready(function(){
 
   var input
   var futureBoard;
-  $(".square").hover(function(event){
+  $('#app').on("mouseenter", ".square", function(event){
+    console.log('here');
     input = event.target.id;
     if (g.validMoves().includes(parseInt(input))){
       futureBoard = g.nextState(g.state, wrappedModulus(input, 9));
@@ -111,20 +112,19 @@ $(document).ready(function(){
       }
       $("#" + futureBoard).addClass('nextBoard');
     }
-  },
-  function(){
-    if (isChildBoardOfState(g.state, input)){
-      $("#" + futureBoard).removeClass('nextBoard');
-    }
   }
 
   );
-  $("#botButton").click(function(event){
-    var bot = new Bot({game: g});
-    var recommended = bot.recommendMove();
-    console.log(bot.gameTree.rootNode.data.minimax);
-    console.log(bot.gameTree.rootNode.data.heuristic);
-    g.playMove(recommended);
+  $('#app').on('mouseleave', '.square', function(){
+    if (isChildBoardOfState(g.state, input)){
+      $("#" + futureBoard).removeClass('nextBoard');
+    }
+  })
+  $("#newGame3").click(function(event){
+    console.log('newGame')
+    bot = null;
+    botCreated = false;
+    g = new Game({numberOfLevels: 3});
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
@@ -136,10 +136,11 @@ $(document).ready(function(){
     bot = new Bot({game: g});
 
   })
-  $(window).keypress(function(event){
-    console.log('undo pending');
+  $("#undoButton").click(function(event){
     g.undoMove();
-    console.log(g);
+    if(botCreated){
+      bot = new Bot({game: g});
+    }
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')

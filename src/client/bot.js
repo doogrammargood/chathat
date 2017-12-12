@@ -238,7 +238,7 @@ function Bot(obj){
     }
   } // this bracket closes GameTree
 
-  this.gameTree = new GameTree({game: obj.game, depth: 6});
+  this.gameTree = new GameTree({game: obj.game, depth: 5});
   this.gameTree.startABTree();
   //await the creation of the gameTree.
 
