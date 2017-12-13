@@ -37,6 +37,10 @@ body {
   background-color: #b237ea;
   border-radius: 6px;
 }
+.board.reactive1{
+  background-color: #b237ea;
+  border-radius: 6px;
+}
 
 .blvl1{
   padding: 12px;

@@ -85,7 +85,7 @@ $(document).ready(function(){
 
 
   var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
-  $("#app").on('click', ".square",function(event){
+  $("#app").on('click', ".square", function(event){
     if (event.target.id){
       g.playMove(event.target.id);
     if (botCreated && ! g.winner){
@@ -102,23 +102,27 @@ $(document).ready(function(){
 
   var input
   var futureBoard;
+  var parentBoard;
   $('#app').on("mouseenter", ".square", function(event){
     console.log('here');
     input = event.target.id;
     if (g.validMoves().includes(parseInt(input))){
-      futureBoard = g.nextState(g.state, wrappedModulus(input, 9));
+      futureBoard = g.nextState(parentState(input), wrappedModulus(input, 9));
       while(g.subBoards[g.state].isFull){
         futureBoard = parentState(futureBoard); // use popUntilValid
       }
+      parentBoard = parentState(futureBoard);
       $("#" + futureBoard).addClass('nextBoard');
+      if (g.numberOfLevels === 3 && g.state === 0){
+        $("#" + parentBoard).addClass('reactive1'); //this is a hack. reactive1 looks just like active1
+      }
     }
   }
 
   );
   $('#app').on('mouseleave', '.square', function(){
-    if (isChildBoardOfState(g.state, input)){
-      $("#" + futureBoard).removeClass('nextBoard');
-    }
+    $("#" + futureBoard).removeClass('nextBoard');
+    $("#" + parentBoard).removeClass('reactive1');
   })
   $("#newGame3").click(function(event){
     console.log('newGame')
