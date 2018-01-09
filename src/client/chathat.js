@@ -299,12 +299,12 @@ function Game(obj){
 		if (activeBoard.makeMove({index: position, token: this.currentPlayer}) === 'collision'){
 			return('collision');
 		}
-		if (winner = this.checkVictory(boardToPlayOn)){ //check for winners on the board that was moved on.
-			this.currentPlayer = nextPlayer(this.currentPlayer);
-			return winner;
-		}
+		 if (winner = this.checkVictory(boardToPlayOn)){ //check for winners on the board that was moved on.
+		 	this.currentPlayer = nextPlayer(this.currentPlayer);
+		 	return winner;
+		 }
 		this.state = this.nextState(boardToPlayOn, position);
-		this.popUntilValid();
+ 	 	this.popUntilValid();
 		this.currentPlayer = nextPlayer(this.currentPlayer);
 	}
 
@@ -340,7 +340,7 @@ function Game(obj){
 		}
 
 		boardsWon = boardsWon.map(function(e, i){
-			return[e[0], e[1], newBoardsWon[i][1]];
+			return [e[0], e[1], newBoardsWon[i][1]];
 		}); //merges the lists BoardsWon and newBoardsWon. Overwrites boardsWon.
 
 		boardsWon = boardsWon.map(function(triple){
@@ -368,7 +368,7 @@ function Game(obj){
 		//n- the board was owned by the other player, is now neutral.
 	}
 
-	this.undoMove = function(obj){
+	this.undoMove = function(obj){ //This whole function is really bad.
 		this.winner = null;
 		//Uses the moveHistory
 		if (this.moveHistory.length === 0){
@@ -393,44 +393,66 @@ function Game(obj){
 		}
 		lastMove.shift(); //gets rid of the move
 		this.state = lastMove.shift(); //gets rid of the previousState.
+		var change = 'w'; // We consider placing a token as winning that square
 		while (lastMove.length >= 0){
-
+			if (parentBoard && eraseX >=0 && eraseY >= 0){
+				if (change === 'w'){
+					parentBoard.squares[eraseX][eraseY].token = null;
+					parentBoard.openSquares += 1;
+					parentBoard.isFull = false;
+				}
+				if (change === 's'){
+					if (this.currentPlayer === 'X'){
+						parentBoard.squares[eraseX][eraseY].token = 'O';}
+					else {
+						parentBoard.squares[eraseX][eraseY].token = 'X';}
+						}
+				if (change ==='n'){
+					if (this.currentPlayer === 'X'){
+						parentBoard.squares[eraseX][eraseY].token = 'O';}
+					else {
+						parentBoard.squares[eraseX][eraseY].token = 'X';}
+					parentBoard.openSquares -= 1;
+					if (parentBoard.openSquares===0){parentBoard.isFull = true;}
+				}
+				parentBoard.updateVictories({x: eraseX, y: eraseY});
+			}
+			if (lastMove.length === 0){
+				return 'undone';}
 			change = lastMove.shift(); //wsn, from moveHistory.
-			parentBoard.squares[eraseX][eraseY].token = null; //removes the token.
-			parentBoard.openSquares += 1;
-			parentBoard.isFull = false;
-			parentBoard.updateVictories({x: eraseX, y: eraseY}); //recalculates which lines have been won.
+			//parentBoard.squares[eraseX][eraseY].token = null; //removes the token.
+			//parentBoard.openSquares += 1;
+			//parentBoard.isFull = false;
+			//parentBoard.updateVictories({x: eraseX, y: eraseY}); //recalculates which lines have been won.
 			if (change==='w'){
-				parentBoard.winner = null;
-			}else if(change === 's'){
-				parentBoard.winner = this.currentPlayer;
-			}else if(change === 'n' && this.currentPlayer==='X'){
-				parentBoard.winner = 'O';
-			} else if(change === 'n' && this.currentPlayer==='O'){
-				parentBoard.winner = 'X';
+				parentBoard.winner = null;}
+			if(change === 'n' || change === 's'){
+			 	if (this.currentPlayer==='X'){
+					parentBoard.winner = 'O';
+				} else{
+					parentBoard.winner = 'X';
+				}
 			}
 			lastBoard = parentBoard;
 			parentBoard = this.findBoard(parentState(lastBoard.name));
 			squareToErase = lastBoard.name - 9*parentBoard.name - 1;
 			eraseY = squareToErase % 3;
 			eraseX = Math.floor(squareToErase/3);
-			if (lastMove.length ===0){return 'undone';}
 		}
 	}
 
 	this.validMoves = function(){ // returns a list of valid moves.
 		var state = this.state;
-		if (this.winner) {return []}
+		if (this.winner) {return([]);}
 		if (this.allowedMoves){
 			return this.allowedMoves;
 		} else{
 			this.allowedMoves = this.subBoards.filter(function(subBoard){
-				return isChildBoardOfState(state, subBoard.name) && subBoard.isTerminal;
+				return(isChildBoardOfState(state, subBoard.name) && subBoard.isTerminal);
 			}).map(function(subBoard){
 				return subBoard.squares.reduce((a, b) => a.concat(b), []); //flattens the array of squares
 			}).reduce((a, b) => a.concat(b), []
 			).filter(function(square){
-				//console.log(square);
 				return square.token === null;
 			}).map(function(square){
 				return square.identifier;

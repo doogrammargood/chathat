@@ -134,7 +134,6 @@ $(document).ready(function(){
     $("#" + parentBoard).removeClass('reactive1');
   })
   $("#toggleSize").click(function(event){
-    console.log('newGame');
     bot = null; //note, originally bot was undefined. Now it is null.
     bot_x = false;
     bot_o = false;
@@ -151,10 +150,14 @@ $(document).ready(function(){
       bot_x = true;
       bot_o = true;
       var recommendation = bot.recommendMove();
-      while(! g.winner){
+      while(g.validMoves().length > 0){
         play(recommendation);
         recommendation = bot.receiveMove(recommendation);
       }
+      console.log('ended game');
+      console.log(g);
+      bot_x = false;
+      bot_o = false;
     } //add the second bot
     else {
       bot = new Bot({game: g});
@@ -167,8 +170,6 @@ $(document).ready(function(){
         bot_o = true;
       }
       //create the bot, have it make a move and give it back its own move.
-
-      console.log(bot);
     }
 
   })

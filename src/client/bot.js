@@ -29,7 +29,7 @@ function Bot(obj){
                                        moveToGetHere: obj.move,
                                        toPlay: obj.game.currentPlayer}));
           this.unexploredMoves = this.unexploredMoves.filter(function(move){
-            return move !== obj.move;
+            return(parseInt(move) !== parseInt(obj.move));
           });
           return this.children[this.children.length - 1]; //return the node that was just created.
         } else {console.log('The bot made an illegal move!'); console.log(obj.move); console.log(obj.game);}
@@ -172,21 +172,19 @@ function Bot(obj){
       let minimax;
       if (this.rootNode.toPlay === 'X'){
         var length = this.currentGame.moveHistory.length;
+        //console.log(this.rootNode);
         minimax = this.maxValue(this.rootNode, -Infinity, Infinity);
+        this.currentGame.validMoves();
         if (this.rootGame.validMoves().length !== this.rootNode.children.length){
           console.log('horrible error');
-          console.log(this.rootGame);
-          console.log(this.rootNode);
         }
         return minimax;
       }
       else if(this.rootNode.toPlay === 'O'){
         var length = this.currentGame.moveHistory.length;
         minimax = this.minValue(this.rootNode, -Infinity, Infinity);
+        this.currentGame.validMoves();
         if (this.rootGame.validMoves().length !== this.rootNode.children.length){console.log('horrible error');
-          console.trace();
-          console.log(this.rootGame);
-          console.log(this.rootNode);
       }
         return minimax;
       }
@@ -202,35 +200,15 @@ function Bot(obj){
          return 'Game Over';}
       return recommendations[0].moveToGetHere; //if no argument is given, we return the move to make. The argument is ignored.
     }
-    this.recursiveRemove = function(node){
-      //removes the given node and all its descendants.
-      let index = 0;
-      while(node.children.length > 0){
-        this.recursiveRemove(node.children[0]);
-        node.children = node.children.slice(1,node.children.length);
-        }
-      node.children = [];
-      node = null;
-      return 'removed';
-    }
-    this.receiveMove = function(move){ //This function should take a move and make that move
+     this.receiveMove = function(move){ //This function should take a move and make that move
       if (! this.rootGame.validMoves().includes(parseInt(move))){
         console.log('That move is not valid.');
-        console.log(move);
-        console.log(this.rootGame);
-        console.log(this.currentGame);
       }
       this.rootGame.playMove(move); //Mavke the move on the root game.
       this.currentGame.playMove(move);
-      var nodesToRemove = this.rootNode.children.filter(function(child){
-        return child.moveToGetHere !== parseInt(move);
-      }); //These nodes represent moves which did not occur.
-      //while (nodesToRemove.length > 0){
-      //  this.recursiveRemove(nodesToRemove.shift());
-      //}
       this.rootNode.children = this.rootNode.children.filter(function(child){return (child.moveToGetHere === parseInt(move));});
       this.rootNode = this.rootNode.children[0]; // there should be only one node there
-      //this.rootNode.parent = null; //remove the old rootNode.
+      this.rootNode.parent = null; //remove the old rootNode.
     }
   } // this bracket closes GameTree
 
