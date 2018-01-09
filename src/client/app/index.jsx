@@ -83,28 +83,28 @@ $(document).ready(function(){
     document.getElementById('app')
   );
 
-
-  var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
-  $("#app").on('click', ".square", function(event){
-    if (event.target.id){
-      g.playMove(event.target.id);
-    if (botCreated && ! g.winner){
-      botMove = bot.receiveMove(event.target.id);
-        g.playMove(botMove);                 //play that move one the board.
-        bot.receiveMove(botMove);     //make the bot play its move.
-    }
+  function play(move){ //plays the move, and renders said move.
+    g.playMove(move);
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
     );
   }
+
+  var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
+  $("#app").on('click', ".square", function(event){
+    play(event.target.id);
+    if(botCreated && ! g.winner){
+      var botMove = bot.receiveMove(event.target.id);
+      play(botMove);
+      bot.receiveMove(botMove);
+    }
   });
 
   var input
   var futureBoard;
   var parentBoard;
   $('#app').on("mouseenter", ".square", function(event){
-    console.log('here');
     input = event.target.id;
     if (g.validMoves().includes(parseInt(input))){
       futureBoard = g.nextState(parentState(input), wrappedModulus(input, 9));
@@ -124,23 +124,31 @@ $(document).ready(function(){
     $("#" + futureBoard).removeClass('nextBoard');
     $("#" + parentBoard).removeClass('reactive1');
   })
-  $("#newGame3").click(function(event){
-    console.log('newGame')
+  $("#toggleSize").click(function(event){
+    console.log('newGame');
     bot = null;
     botCreated = false;
-    g = new Game({numberOfLevels: 3});
+    var levels = g.numberOfLevels;
+    levels = (levels%3) + 1;
+    g = new Game({numberOfLevels: levels});
     ReactDOM.render(
       <WrapperForDisplayBoard game = {g}/>,
       document.getElementById('app')
     );
   });
-  $("#generateOpponent").click(function(event){
+  $("#playBot").click(function(event){
     if (botCreated) {return null;} //Do nothing, because there's already a bot.
-    botCreated = true;
-    bot = new Bot({game: g});
+    else { //create the bot, have it make a move and give it back its own move.
+      botCreated = true;
+      bot = new Bot({game: g});
+      var botMove = bot.recommendMove();
+      play(botMove);
+      bot.receiveMove(botMove);
+      console.log(bot);
+    }
 
   })
-  $("#undoButton").click(function(event){
+  $("#undoMove").click(function(event){
     g.undoMove();
     if(botCreated){
       bot = new Bot({game: g});

@@ -300,6 +300,7 @@ function Game(obj){
 			return('collision');
 		}
 		if (winner = this.checkVictory(boardToPlayOn)){ //check for winners on the board that was moved on.
+			this.currentPlayer = nextPlayer(this.currentPlayer);
 			return winner;
 		}
 		this.state = this.nextState(boardToPlayOn, position);
@@ -308,9 +309,6 @@ function Game(obj){
 	}
 
 	this.playMove = function(input){
-		if (input === '16' && this.playerX === 'Jonathan'){
-			console.log('wait here');
-		}
 		if (this.hasMoved === false){
 			this.hasMoved = true;
 		}
