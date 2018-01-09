@@ -75,8 +75,10 @@ class App extends React.Component {
 
 /*-------*/
 $(document).ready(function(){
-  var botCreated = false; //Initially, there is no bot present.
+  var botCreated = () => {return(bot_x || bot_o);}
   var bot;
+  var bot_x = false; //There's
+  var bot_o = false;
   var botMove;
   ReactDOM.render(
     <WrapperForDisplayBoard game = {new Game({numberOfLevels: 2})}/>,
@@ -93,11 +95,18 @@ $(document).ready(function(){
 
   var g = new Game({numberOfLevels: 2, playerX: 'Jonathan'}); //** takes
   $("#app").on('click', ".square", function(event){
-    play(event.target.id);
-    if(botCreated && ! g.winner){
-      var botMove = bot.receiveMove(event.target.id);
-      play(botMove);
-      bot.receiveMove(botMove);
+    if(bot_x && bot_o){return null;}//Disable clicks while both bots are on
+    if ((g.currentPlayer === 'X' && ! bot_x) || (g.currentPlayer === 'O' && ! bot_o)){ //If it's the current player's turn and he's not a bot.
+      play(event.target.id);
+      if(bot_x && g.currentPlayer === 'X'){
+        var botMove = bot.receiveMove(event.target.id);
+        play(botMove);
+        bot.receiveMove(botMove);
+      } else if (bot_o && g.currentPlayer ==='O'){
+        var botMove = bot.receiveMove(event.target.id);
+        play(botMove);
+        bot.receiveMove(botMove);
+      }
     }
   });
 
@@ -126,8 +135,9 @@ $(document).ready(function(){
   })
   $("#toggleSize").click(function(event){
     console.log('newGame');
-    bot = null;
-    botCreated = false;
+    bot = null; //note, originally bot was undefined. Now it is null.
+    bot_x = false;
+    bot_o = false;
     var levels = g.numberOfLevels;
     levels = (levels%3) + 1;
     g = new Game({numberOfLevels: levels});
@@ -136,21 +146,35 @@ $(document).ready(function(){
       document.getElementById('app')
     );
   });
-  $("#playBot").click(function(event){
-    if (botCreated) {return null;} //Do nothing, because there's already a bot.
-    else { //create the bot, have it make a move and give it back its own move.
-      botCreated = true;
+  $("#addBot").click(function(event){
+    if (botCreated()) {
+      bot_x = true;
+      bot_o = true;
+      var recommendation = bot.recommendMove();
+      while(! g.winner){
+        play(recommendation);
+        recommendation = bot.receiveMove(recommendation);
+      }
+    } //add the second bot
+    else {
       bot = new Bot({game: g});
       var botMove = bot.recommendMove();
       play(botMove);
       bot.receiveMove(botMove);
+      if (g.currentPlayer === 'O'){ //The move has been made, so the bot plays the other symbol.
+        bot_x = true;
+      } else{
+        bot_o = true;
+      }
+      //create the bot, have it make a move and give it back its own move.
+
       console.log(bot);
     }
 
   })
   $("#undoMove").click(function(event){
     g.undoMove();
-    if(botCreated){
+    if(botCreated()){
       bot = new Bot({game: g});
     }
     ReactDOM.render(
